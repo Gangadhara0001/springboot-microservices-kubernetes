@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: microservices-ingress
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - http:
+        paths:
+          # All application requests go to API Gateway
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 8085
+
+          # OAuth2 endpoints go directly to Auth Server
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-server
+                port:
+                  number: 9000

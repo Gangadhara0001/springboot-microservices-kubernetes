@@ -1,0 +1,46 @@
+server:
+  port: 8085
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://auth-server:9000
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: employee-service
+            uri: lb://EMPLOYEE-SERVICE
+            predicates:
+              - Path=/api/employee/**
+
+          - id: department-service
+            uri: lb://DEPARTMENT-SERVICE
+            predicates:
+              - Path=/api/department/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+

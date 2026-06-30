@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: employee-service
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: employee-service
+
+  template:
+    metadata:
+      labels:
+        app: employee-service
+
+    spec:
+      containers:
+        - name: employee-service
+          image: springboot-1-employee-service:latest
+          imagePullPolicy: Never
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 60
+            periodSeconds: 20
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            failureThreshold: 30
+            periodSeconds: 10
+
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+
+            - name: CONFIG_SERVER_URL
+              value: "http://config-server:8888"
+
+          ports:
+            - containerPort: 8082
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"

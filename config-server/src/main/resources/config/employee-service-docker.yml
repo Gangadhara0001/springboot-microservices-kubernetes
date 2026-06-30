@@ -1,0 +1,93 @@
+server:
+  port: 8082
+
+department:
+  baseUrl: http://department-service:8081
+
+spring:
+  config:
+    import: optional:configserver:http://config-server:8888
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/microservices_db
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  Jackson:
+    default-property-inclusion: non_null
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://auth-server:9000
+
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    com.example.feign: DEBUG
+    org.springframework.web: INFO
+
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+  file:
+    name: logs/employee-service.log
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+
+  instance:
+    hostname: employee-service
+    prefer-ip-address: false
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      departmentService:
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+
+  retry:
+    instances:
+      departmentRetry:
+        maxAttempts: 3
+        waitDuration: 2s
+
+  ratelimiter:
+    instances:
+      departmentRateLimiter:
+        limitForPeriod: 2
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+
