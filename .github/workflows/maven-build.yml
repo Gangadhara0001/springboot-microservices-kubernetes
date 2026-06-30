@@ -1,0 +1,53 @@
+name: Spring Boot Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build Config Server
+        run: |
+          cd config-server
+          mvn clean package -DskipTests
+
+      - name: Build Eureka Server
+        run: |
+          cd eureka-server
+          mvn clean package -DskipTests
+
+      - name: Build Auth Server
+        run: |
+          cd auth-server
+          mvn clean package -DskipTests
+
+      - name: Build Employee Service
+        run: |
+          cd employee-service
+          mvn clean package -DskipTests
+
+      - name: Build Department Service
+        run: |
+          cd department-service
+          mvn clean package -DskipTests
+
+      - name: Build API Gateway
+        run: |
+          cd api-gateway
+          mvn clean package -DskipTests
