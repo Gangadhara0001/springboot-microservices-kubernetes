@@ -9,7 +9,6 @@ jobs:
 
 build:
 
-```
 runs-on: ubuntu-latest
 
 steps:
@@ -106,4 +105,3 @@ steps:
   - name: Push API Gateway Docker Image
     run: |
       docker push gangadharaab/api-gateway:v1
-```
