@@ -1,107 +1,105 @@
 name: Spring Boot Build
 
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
 
-build:
+    steps:
 
-runs-on: ubuntu-latest
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-steps:
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
 
-  - name: Checkout Code
-    uses: actions/checkout@v4
+      - name: Build Config Server
+        run: |
+          cd config-server
+          mvn clean package -DskipTests
 
-  - name: Setup JDK 21
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: 21
+      - name: Build Eureka Server
+        run: |
+          cd eureka-server
+          mvn clean package -DskipTests
 
-  - name: Build Config Server
-    run: |
-      cd config-server
-      mvn clean package -DskipTests
+      - name: Build Auth Server
+        run: |
+          cd auth-server
+          mvn clean package -DskipTests
 
-  - name: Build Eureka Server
-    run: |
-      cd eureka-server
-      mvn clean package -DskipTests
+      - name: Build Employee Service
+        run: |
+          cd employee-service
+          mvn clean package -DskipTests
 
-  - name: Build Auth Server
-    run: |
-      cd auth-server
-      mvn clean package -DskipTests
+      - name: Build Department Service
+        run: |
+          cd department-service
+          mvn clean package -DskipTests
 
-  - name: Build Employee Service
-    run: |
-      cd employee-service
-      mvn clean package -DskipTests
+      - name: Build API Gateway
+        run: |
+          cd api-gateway
+          mvn clean package -DskipTests
 
-  - name: Build Department Service
-    run: |
-      cd department-service
-      mvn clean package -DskipTests
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  - name: Build API Gateway
-    run: |
-      cd api-gateway
-      mvn clean package -DskipTests
+      - name: Build Config Server Docker Image
+        run: |
+          docker build -t gangadharaab/config-server:v1 ./config-server
 
-  - name: Login to Docker Hub
-    uses: docker/login-action@v3
-    with:
-      username: ${{ secrets.DOCKER_USERNAME }}
-      password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Push Config Server Docker Image
+        run: |
+          docker push gangadharaab/config-server:v1
 
-  - name: Build Config Server Docker Image
-    run: |
-      docker build -t gangadharaab/config-server:v1 ./config-server
+      - name: Build Eureka Server Docker Image
+        run: |
+          docker build -t gangadharaab/eureka-server:v1 ./eureka-server
 
-  - name: Push Config Server Docker Image
-    run: |
-      docker push gangadharaab/config-server:v1
+      - name: Push Eureka Server Docker Image
+        run: |
+          docker push gangadharaab/eureka-server:v1
 
-  - name: Build Eureka Server Docker Image
-    run: |
-      docker build -t gangadharaab/eureka-server:v1 ./eureka-server
+      - name: Build Auth Server Docker Image
+        run: |
+          docker build -t gangadharaab/auth-server:v1 ./auth-server
 
-  - name: Push Eureka Server Docker Image
-    run: |
-      docker push gangadharaab/eureka-server:v1
+      - name: Push Auth Server Docker Image
+        run: |
+          docker push gangadharaab/auth-server:v1
 
-  - name: Build Auth Server Docker Image
-    run: |
-      docker build -t gangadharaab/auth-server:v1 ./auth-server
+      - name: Build Employee Service Docker Image
+        run: |
+          docker build -t gangadharaab/employee-service:v1 ./employee-service
 
-  - name: Push Auth Server Docker Image
-    run: |
-      docker push gangadharaab/auth-server:v1
+      - name: Push Employee Service Docker Image
+        run: |
+          docker push gangadharaab/employee-service:v1
 
-  - name: Build Employee Service Docker Image
-    run: |
-      docker build -t gangadharaab/employee-service:v1 ./employee-service
+      - name: Build Department Service Docker Image
+        run: |
+          docker build -t gangadharaab/department-service:v1 ./department-service
 
-  - name: Push Employee Service Docker Image
-    run: |
-      docker push gangadharaab/employee-service:v1
+      - name: Push Department Service Docker Image
+        run: |
+          docker push gangadharaab/department-service:v1
 
-  - name: Build Department Service Docker Image
-    run: |
-      docker build -t gangadharaab/department-service:v1 ./department-service
+      - name: Build API Gateway Docker Image
+        run: |
+          docker build -t gangadharaab/api-gateway:v1 ./api-gateway
 
-  - name: Push Department Service Docker Image
-    run: |
-      docker push gangadharaab/department-service:v1
-
-  - name: Build API Gateway Docker Image
-    run: |
-      docker build -t gangadharaab/api-gateway:v1 ./api-gateway
-
-  - name: Push API Gateway Docker Image
-    run: |
-      docker push gangadharaab/api-gateway:v1
+      - name: Push API Gateway Docker Image
+        run: |
+          docker push gangadharaab/api-gateway:v1
